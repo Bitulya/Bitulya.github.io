@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitulya Admin Panel</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 191, 118, .22), transparent 34%),
+        radial-gradient(circle at 85% 18%, rgba(255, 84, 132, .16), transparent 30%),
+        #090909;
+      color: #fff;
+      line-height: 1.5;
+    }
+    .wrap { width: min(1120px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 60px; }
+    header {
+      padding: 30px;
+      border-radius: 28px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(34px, 6vw, 68px); letter-spacing: -2px; }
+    h2 { margin-top: 0; font-size: 28px; }
+    .sub { color: rgba(255,255,255,.68); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .card {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+    label {
+      display: block;
+      font-weight: 800;
+      color: #ffd8ad;
+      margin: 14px 0 8px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.28);
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+    textarea { min-height: 150px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      margin: 8px 8px 0 0;
+      background: #fff;
+      color: #111;
+    }
+    button.secondary {
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.16);
+    }
+    button.danger { background: #ff5f6d; color: #fff; }
+    .full { grid-column: 1 / -1; }
+    .row {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .platform-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+    .output {
+      min-height: 240px;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre;
+    }
+    .note {
+      padding: 14px 16px;
+      background: rgba(255,216,173,.12);
+      border: 1px solid rgba(255,216,173,.22);
+      border-radius: 16px;
+      color: #ffd8ad;
+      margin: 16px 0;
+    }
+    @media (max-width: 760px) {
+      .grid, .row, .platform-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Bitulya Admin Panel</h1>
+      <p class="sub">Проста локальна панель керування для сайту Bitulya. Працює без сервера та бази даних.</p>
+      <div class="note">
+        Як користуватись: відредагуй поля → натисни “Зберегти в браузері” → “Згенерувати HTML”. Потім скопіюй код або збережи файл.
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>👤 Профіль</h2>
+        <label>Ім'я артиста</label>
+        <input id="artistName" value="BITULYA" />
+
+        <label>Гасло</label>
+        <input id="slogan" value="🎵 Bitulya — музика спогадів, яку хочеться ставити на повтор." />
+
+        <label>Біографія</label>
+        <textarea id="bioText">Bitulya — український виконавець та автор пісень 🎶
+
+Свій творчий шлях розпочав ще на початку 2010-х років під псевдонімом Sense of Words. У той час створював ліричний реп російською мовою та ділився своєю музикою на платформах епохи VK.
+
+Після тривалої творчої паузи повернувся до музики з новим баченням, новим звучанням та новим ім’ям — Bitulya.
+
+Сьогодні творчість Bitulya — це щирі історії, емоції, спогади та почуття, викладені вже українською мовою. Кожна пісня — це окрема сторінка життя, наповнена переживаннями, щирими почуттями, теплом і справжніми емоціями.</textarea>
+      </section>
+
+      <section class="card">
+        <h2>🔗 Офіційні платформи</h2>
+        <div id="platforms"></div>
+      </section>
+
+      <section class="card full">
+        <h2>💿 Альбом «Флешбек Минулого»</h2>
+        <div id="tracks"></div>
+        <button onclick="addTrack()">+ Додати пісню</button>
+      </section>
+
+      <section class="card full">
+        <h2>🎵 Тексти пісень</h2>
+        <label>Оберіть пісню</label>
+        <select id="lyricsSelect" onchange="loadLyric()"></select>
+
+        <label>Текст пісні</label>
+        <textarea id="lyricsText" style="min-height: 360px;"></textarea>
+
+        <button onclick="saveLyric()">Зберегти текст пісні</button>
+      </section>
+
+      <section class="card full">
+        <h2>💾 Дії</h2>
+        <button onclick="saveData()">Зберегти в браузері</button>
+        <button class="secondary" onclick="loadData()">Завантажити збережене</button>
+        <button class="secondary" onclick="generateHTML()">Згенерувати HTML</button>
+        <button class="secondary" onclick="copyHTML()">Скопіювати HTML</button>
+        <button class="danger" onclick="resetData()">Скинути</button>
+
+        <label>Готовий HTML</label>
+        <textarea id="output" class="output" placeholder="Тут зʼявиться готовий HTML сайту після генерації"></textarea>
+      </section>
+    </div>
+  </div>
+
+<script>
+const defaultData = {
+  platforms: [
+    ["Smart Link", "https://hypeddit.com/bitulya"],
+    ["Spotify", "https://open.spotify.com/artist/0869OGvrlNiPLhDmpDweyR"],
+    ["YouTube", "https://youtube.com/@b1tulya"],
+    ["YouTube Music", "https://music.youtube.com/@b1tulya"],
+    ["Instagram", "https://instagram.com/b1tulya"],
+    ["TikTok", "https://tiktok.com/@b1tulya"],
+    ["Facebook", "https://facebook.com/b1tulya"],
+    ["Threads", "https://www.threads.com/@b1tulya"],
+    ["Amazon Music", "https://music.amazon.com/artists/B0H3GGXFZG/bitulya"],
+    ["Deezer", "https://link.deezer.com/s/33vDcZEANSqdOuiOiCnAp"]
+  ],
+  tracks: [
+    ["На Повтор", "Доступно"],
+    ["Хочу", "Доступно"],
+    ["Без Тебя", "Доступно"],
+    ["Один Взгляд (Official)", "Доступно"],
+    ["Ты Знаешь Мам", "Доступно"],
+    ["Сказки о любви", "Доступно"],
+    ["Она", "Очікується"],
+    ["Для неё", "Очікується"],
+    ["Девочка с картинки", "Очікується"],
+    ["Смотри какая чика", "Очікується"],
+    ["Пока горела спичка", "Очікується"],
+    ["Девушка беда", "Очікується"]
+  ],
+  lyrics: {
+    "На Повтор": "Встав тут офіційний текст пісні «На Повтор».",
+    "Хочу": "Встав тут офіційний текст пісні «Хочу».",
+    "Без Тебя": "Встав тут офіційний текст пісні «Без Тебя».",
+    "Один Взгляд (Official)": "Встав тут офіційний текст пісні «Один Взгляд (Official)».",
+    "Ты Знаешь Мам": "Встав тут офіційний текст пісні «Ты Знаешь Мам».",
+    "Сказки о любви": "Встав тут офіційний текст пісні «Сказки о любви»."
+  }
+};
+
+let data = structuredClone(defaultData);
+
+function renderPlatforms() {
+  const box = document.getElementById("platforms");
+  box.innerHTML = "";
+  data.platforms.forEach((p, i) => {
+    const div = document.createElement("div");
+    div.className = "platform-row";
+    div.innerHTML = `
+      <div><label>Платформа</label><input value="${escapeAttr(p[0])}" oninput="data.platforms[${i}][0]=this.value"></div>
+      <div><label>Посилання</label><input value="${escapeAttr(p[1])}" oninput="data.platforms[${i}][1]=this.value"></div>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function renderTracks() {
+  const box = document.getElementById("tracks");
+  box.innerHTML = "";
+  data.tracks.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.className = "row";
+    div.innerHTML = `
+      <div><label>Назва</label><input value="${escapeAttr(t[0])}" oninput="updateTrackName(${i}, this.value)"></div>
+      <div><label>Статус</label>
+        <select onchange="data.tracks[${i}][1]=this.value">
+          <option ${t[1]==="Доступно"?"selected":""}>Доступно</option>
+          <option ${t[1]==="Очікується"?"selected":""}>Очікується</option>
+        </select>
+      </div>
+      <button class="danger" onclick="removeTrack(${i})">Видалити</button>
+    `;
+    box.appendChild(div);
+  });
+  renderLyricsSelect();
+}
+
+function updateTrackName(i, value) {
+  const old = data.tracks[i][0];
+  data.tracks[i][0] = value;
+  if (data.lyrics[old] && !data.lyrics[value]) {
+    data.lyrics[value] = data.lyrics[old];
+    delete data.lyrics[old];
+  }
+  renderLyricsSelect();
+}
+
+function addTrack() {
+  data.tracks.push(["Нова пісня", "Очікується"]);
+  data.lyrics["Нова пісня"] = "";
+  renderTracks();
+}
+
+function removeTrack(i) {
+  const name = data.tracks[i][0];
+  data.tracks.splice(i, 1);
+  delete data.lyrics[name];
+  renderTracks();
+}
+
+function renderLyricsSelect() {
+  const sel = document.getElementById("lyricsSelect");
+  const current = sel.value;
+  sel.innerHTML = "";
+  data.tracks.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t[0];
+    opt.textContent = t[0];
+    sel.appendChild(opt);
+  });
+  if ([...sel.options].some(o => o.value === current)) sel.value = current;
+  loadLyric();
+}
+
+function loadLyric() {
+  const title = document.getElementById("lyricsSelect").value;
+  document.getElementById("lyricsText").value = data.lyrics[title] || "";
+}
+
+function saveLyric() {
+  const title = document.getElementById("lyricsSelect").value;
+  data.lyrics[title] = document.getElementById("lyricsText").value;
+  alert("Текст пісні збережено в панелі.");
+}
+
+function collectData() {
+  data.artistName = document.getElementById("artistName").value;
+  data.slogan = document.getElementById("slogan").value;
+  data.bioText = document.getElementById("bioText").value;
+  saveLyric();
+}
+
+function saveData() {
+  collectData();
+  localStorage.setItem("bitulyaAdminData", JSON.stringify(data));
+  alert("Збережено в браузері.");
+}
+
+function loadData() {
+  const saved = localStorage.getItem("bitulyaAdminData");
+  if (saved) data = JSON.parse(saved);
+  document.getElementById("artistName").value = data.artistName || "BITULYA";
+  document.getElementById("slogan").value = data.slogan || defaultData.slogan || "";
+  document.getElementById("bioText").value = data.bioText || document.getElementById("bioText").value;
+  renderPlatforms();
+  renderTracks();
+}
+
+function resetData() {
+  if (!confirm("Скинути всі зміни?")) return;
+  data = structuredClone(defaultData);
+  localStorage.removeItem("bitulyaAdminData");
+  location.reload();
+}
+
+function generateHTML() {
+  collectData();
+  const links = data.platforms.map(p => `<a href="${escapeHtml(p[1])}" target="_blank">${escapeHtml(p[0])}</a>`).join("\\n");
+  const tracks = data.tracks.map((t, i) => `<li>${String(i+1).padStart(2,"0")}. ${escapeHtml(t[0])} — <strong>${escapeHtml(t[1])}</strong></li>`).join("\\n");
+  const lyrics = Object.entries(data.lyrics).map(([title, text]) => `<details><summary>${escapeHtml(title)}</summary><pre>${escapeHtml(text)}</pre></details>`).join("\\n");
+
+  const output = `<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(data.artistName)} — Official</title>
+<style>
+body{font-family:Arial;background:#090909;color:white;max-width:980px;margin:auto;padding:30px;line-height:1.6}
+section{margin:28px 0;padding:24px;border:1px solid rgba(255,255,255,.15);border-radius:22px;background:rgba(255,255,255,.06)}
+a{display:inline-block;color:white;margin:6px 8px 6px 0;padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;text-decoration:none}
+pre{white-space:pre-wrap;font-family:inherit;color:#ddd}
+</style>
+</head>
+<body>
+<h1>${escapeHtml(data.artistName)}</h1>
+<p><strong>${escapeHtml(data.slogan)}</strong></p>
+<section><h2>Біографія</h2><pre>${escapeHtml(data.bioText)}</pre></section>
+<section><h2>Флешбек Минулого</h2><ul>${tracks}</ul></section>
+<section><h2>Тексти пісень</h2><p>Офіційні тексти пісень Bitulya.</p>${lyrics}</section>
+<section><h2>Слухати та стежити</h2><p>Офіційні платформи Bitulya.</p>${links}</section>
+</body>
+</html>`;
+  document.getElementById("output").value = output;
+}
+
+function copyHTML() {
+  const out = document.getElementById("output");
+  out.select();
+  document.execCommand("copy");
+  alert("HTML скопійовано.");
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function escapeAttr(str) { return escapeHtml(str).replace(/"/g, "&quot;"); }
+
+renderPlatforms();
+renderTracks();
+</script>
+</body>
+</html>
