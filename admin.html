@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bitulya — Admin Panel</title>
+<style>
+:root{--bg:#040302;--card:#090705;--gold:#f2ad4d;--gold2:#ffd27a;--text:#fff2d1;--muted:#b89c6f;--line:rgba(242,173,77,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 85% 8%,rgba(242,173,77,.18),transparent 28%),linear-gradient(180deg,#050403,#000 55%,#050403);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:18px 14px 90px}
+.card{border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,rgba(12,9,6,.96),rgba(0,0,0,.96));box-shadow:0 0 30px rgba(242,173,77,.12);padding:18px;margin:14px 0}
+h1,h2{margin:0 0 14px;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:24px}h2{font-size:18px}
+label{display:block;margin:12px 0 6px;color:var(--muted);font-weight:800;font-size:13px}
+input,textarea,select{width:100%;border:1px solid rgba(242,173,77,.28);border-radius:16px;background:#070604;color:var(--text);padding:12px;font:inherit;outline:none}
+textarea{min-height:110px;resize:vertical}
+button,.btn{border:1px solid rgba(242,173,77,.45);border-radius:999px;background:linear-gradient(180deg,#f6b451,#cf7d1f);color:#070604;font-weight:950;padding:12px 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn-dark{background:#070604;color:var(--gold2)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:8px 0;position:sticky;top:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:5}
+.tab{white-space:nowrap;background:#070604;color:var(--gold2)}
+.panel{display:none}.panel.active{display:block}
+.track{border:1px solid rgba(242,173,77,.22);border-radius:22px;padding:14px;margin:12px 0;background:rgba(255,255,255,.035)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.notice{line-height:1.55;color:#e6d7b6}.danger{color:#ffb3a8}
+.login{max-width:430px;margin:12vh auto}
+small{color:var(--muted)}
+@media(max-width:700px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="login" class="wrap login">
+  <div class="card">
+    <h1>Bitulya Admin</h1>
+    <p class="notice">Вхід в адмін панель.</p>
+    <label>Login</label>
+    <input id="loginUser" autocomplete="username">
+    <label>Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password">
+    <div class="actions"><button onclick="doLogin()">Увійти</button></div>
+    <p id="loginError" class="danger"></p>
+  </div>
+</div>
+
+<div id="admin" class="wrap" style="display:none">
+  <div class="card">
+    <h1>Адмін панель Bitulya</h1>
+    <p class="notice">Редагуй блоки сайту, додавай музику, обкладинки, тексти й експортуй оновлення. Для статичного сайту зміни зберігаються в браузері через localStorage або експортуються у файл.</p>
+    <div class="actions">
+      <button onclick="saveData()">💾 Зберегти</button>
+      <button class="btn-dark" onclick="downloadJSON()">⬇️ Завантажити data.json</button>
+      <button class="btn-dark" onclick="exportIndex()">⬇️ Експорт index.html</button>
+      <button class="btn-dark" onclick="logout()">Вийти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" onclick="openTab('hero')">Головна</button>
+    <button class="tab" onclick="openTab('tracks')">Музика</button>
+    <button class="tab" onclick="openTab('lyrics')">Тексти</button>
+    <button class="tab" onclick="openTab('future')">Майбутні релізи</button>
+    <button class="tab" onclick="openTab('bio')">Біографія</button>
+    <button class="tab" onclick="openTab('contacts')">Контакти</button>
+  </div>
+
+  <section id="tab-hero" class="panel card">
+    <h2>Головна</h2>
+    <label>Назва артиста</label><input id="heroArtist">
+    <label>Підпис</label><input id="heroSubtitle">
+    <label>Верхній надпис</label><input id="heroTagline">
+  </section>
+
+  <section id="tab-tracks" class="panel card">
+    <h2>Музика</h2>
+    <div id="tracksList"></div>
+    <div class="actions"><button onclick="addTrack()">+ Додати пісню</button></div>
+  </section>
+
+  <section id="tab-lyrics" class="panel card">
+    <h2>Тексти пісень</h2>
+    <div id="lyricsList"></div>
+  </section>
+
+  <section id="tab-future" class="panel card">
+    <h2>Майбутні релізи</h2>
+    <label>Кожен реліз з нового рядка</label>
+    <textarea id="futureList"></textarea>
+  </section>
+
+  <section id="tab-bio" class="panel card">
+    <h2>Біографія</h2>
+    <textarea id="bioText"></textarea>
+  </section>
+
+  <section id="tab-contacts" class="panel card">
+    <h2>Контакти</h2>
+    <label>WhatsApp</label><input id="contactWhatsapp">
+    <label>Telegram</label><input id="contactTelegram">
+    <label>Instagram</label><input id="contactInstagram">
+    <label>Facebook</label><input id="contactFacebook">
+    <label>Email mailto</label><input id="contactEmail">
+  </section>
+</div>
+
+<script>
+const ADMIN_LOGIN = 'Mazafacer222';
+const ADMIN_PASSWORD = 'W@dim!905!996';
+const DEFAULT_DATA = {"hero": {"artistName": "Bitulya", "subtitle": "Український виконавець та автор пісень", "tagline": "Official artist site"}, "tracks": [{"title": "На повтор", "artist": "Bitulya", "audio": "track/na-povtor.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}, {"title": "Хочу", "artist": "Bitulya", "audio": "track/hochu.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}, {"title": "Без Тебя", "artist": "Bitulya", "audio": "track/bez-tebya.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}, {"title": "Один Взгляд (Official)", "artist": "Bitulya", "audio": "track/odin-vzglyad.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}, {"title": "Ты Знаешь Мам", "artist": "Bitulya", "audio": "track/ty-znaesh-mam.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}, {"title": "Сказки о любви", "artist": "Bitulya", "audio": "track/skazki-o-lyubvi.mp3", "cover": "", "lyrics": "Текст Очікується", "released": true}], "future": ["Ти мій дім", "Она", "Для неё", "Девочка с картинки", "Смотри какая чика", "Пока горела спичка", "Девушка беда"], "bio": "Bitulya — український виконавець та автор пісень. Свій творчий шлях розпочав ще на початку 2010-х років під псевдонімом Sense of Words.", "contacts": {"whatsapp": "https://wa.me/380678436531", "telegram": "https://t.me/Bitulya", "instagram": "https://www.instagram.com/b1tulya", "facebook": "https://facebook.com/b1tulya", "email": "mailto:bitulya.official@gmail.com"}};
+
+let data = JSON.parse(localStorage.getItem('bitulyaSiteData') || JSON.stringify(DEFAULT_DATA));
+
+function doLogin(){
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  if(u === ADMIN_LOGIN && p === ADMIN_PASSWORD){
+    sessionStorage.setItem('bitulyaAdminAuth','1');
+    showAdmin();
+  } else {
+    document.getElementById('loginError').textContent = 'Невірний логін або пароль';
+  }
+}
+function logout(){ sessionStorage.removeItem('bitulyaAdminAuth'); location.reload(); }
+function showAdmin(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('admin').style.display='block';
+  fillForm(); openTab('hero');
+}
+function openTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+function fileToDataURL(file, cb){
+  const reader = new FileReader();
+  reader.onload = () => cb(reader.result);
+  reader.readAsDataURL(file);
+}
+function fillForm(){
+  document.getElementById('heroArtist').value = data.hero.artistName || '';
+  document.getElementById('heroSubtitle').value = data.hero.subtitle || '';
+  document.getElementById('heroTagline').value = data.hero.tagline || '';
+  document.getElementById('futureList').value = (data.future || []).join('\n');
+  document.getElementById('bioText').value = data.bio || '';
+  document.getElementById('contactWhatsapp').value = data.contacts.whatsapp || '';
+  document.getElementById('contactTelegram').value = data.contacts.telegram || '';
+  document.getElementById('contactInstagram').value = data.contacts.instagram || '';
+  document.getElementById('contactFacebook').value = data.contacts.facebook || '';
+  document.getElementById('contactEmail').value = data.contacts.email || '';
+  renderTracks();
+  renderLyrics();
+}
+function renderTracks(){
+  const box = document.getElementById('tracksList');
+  box.innerHTML = '';
+  data.tracks.forEach((tr,i)=>{
+    const div = document.createElement('div');
+    div.className='track';
+    div.innerHTML = `
+      <div class="row">
+        <div><label>Назва</label><input value="${escapeAttr(tr.title)}" onchange="data.tracks[${i}].title=this.value;renderLyrics()"></div>
+        <div><label>Виконавець</label><input value="${escapeAttr(tr.artist||'Bitulya')}" onchange="data.tracks[${i}].artist=this.value"></div>
+      </div>
+      <label>Шлях до аудіо</label><input value="${escapeAttr(tr.audio||'')}" onchange="data.tracks[${i}].audio=this.value">
+      <label>Завантажити аудіо</label><input type="file" accept="audio/*" onchange="uploadAudio(event,${i})">
+      <label>Шлях / data обкладинки</label><input value="${escapeAttr(tr.cover||'')}" onchange="data.tracks[${i}].cover=this.value">
+      <label>Завантажити обкладинку</label><input type="file" accept="image/*" onchange="uploadCover(event,${i})">
+      <label><input type="checkbox" ${tr.released!==false?'checked':''} onchange="data.tracks[${i}].released=this.checked" style="width:auto"> Доступна пісня</label>
+      <div class="actions"><button class="btn-dark" onclick="removeTrack(${i})">Видалити</button></div>`;
+    box.appendChild(div);
+  });
+}
+function renderLyrics(){
+  const box = document.getElementById('lyricsList');
+  box.innerHTML = '';
+  data.tracks.forEach((tr,i)=>{
+    const div = document.createElement('div');
+    div.className='track';
+    div.innerHTML = `<h2>${escapeHTML(tr.title||'Пісня')}</h2><textarea onchange="data.tracks[${i}].lyrics=this.value">${escapeHTML(tr.lyrics||'Текст Очікується')}</textarea>`;
+    box.appendChild(div);
+  });
+}
+function uploadAudio(e,i){
+  const f=e.target.files[0]; if(!f) return;
+  fileToDataURL(f, url => { data.tracks[i].audio=url; renderTracks(); alert('Аудіо додано в дані. Для великих mp3 краще використовувати шлях track/назва.mp3'); });
+}
+function uploadCover(e,i){
+  const f=e.target.files[0]; if(!f) return;
+  fileToDataURL(f, url => { data.tracks[i].cover=url; renderTracks(); alert('Обкладинку додано'); });
+}
+function addTrack(){
+  data.tracks.push({title:'Нова пісня',artist:'Bitulya',audio:'track/new.mp3',cover:'',lyrics:'Текст Очікується',released:true});
+  renderTracks(); renderLyrics();
+}
+function removeTrack(i){ data.tracks.splice(i,1); renderTracks(); renderLyrics(); }
+function collect(){
+  data.hero.artistName = document.getElementById('heroArtist').value;
+  data.hero.subtitle = document.getElementById('heroSubtitle').value;
+  data.hero.tagline = document.getElementById('heroTagline').value;
+  data.future = document.getElementById('futureList').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  data.bio = document.getElementById('bioText').value;
+  data.contacts.whatsapp = document.getElementById('contactWhatsapp').value;
+  data.contacts.telegram = document.getElementById('contactTelegram').value;
+  data.contacts.instagram = document.getElementById('contactInstagram').value;
+  data.contacts.facebook = document.getElementById('contactFacebook').value;
+  data.contacts.email = document.getElementById('contactEmail').value;
+}
+function saveData(){
+  collect();
+  localStorage.setItem('bitulyaSiteData', JSON.stringify(data));
+  alert('Збережено. Відкрий index.html на цьому ж домені, щоб побачити зміни.');
+}
+function downloadJSON(){
+  collect(); downloadFile('bitulya-data.json', JSON.stringify(data,null,2), 'application/json');
+}
+async function exportIndex(){
+  collect();
+  let html = '';
+  try{ html = await fetch('index.html').then(r=>r.text()); }
+  catch(e){ alert('Не вдалося автоматично прочитати index.html. Завантаж файл index.html з пакету поруч з admin.html на сайт.'); return; }
+  const inject = '<script id="bitulya-inline-admin-data">localStorage.setItem("bitulyaSiteData", '+JSON.stringify(JSON.stringify(data)) +');<\\/script>';
+  html = html.replace('</body>', inject + '\n</body>');
+  downloadFile('index_updated.html', html, 'text/html');
+}
+function downloadFile(name, content, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function escapeAttr(s){return escapeHTML(s).replace(/`/g,'&#096;');}
+
+if(sessionStorage.getItem('bitulyaAdminAuth')==='1') showAdmin();
+</script>
+</body>
+</html>
