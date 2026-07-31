@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bitulya — Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090b0c;color:#f5f3ee;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:760px;margin:auto;padding:28px 18px}h1{margin-bottom:5px}.muted{color:#999;line-height:1.5}
+.card{background:#121516;border:1px solid #292d2f;border-radius:14px;padding:20px;margin-top:18px}
+a.btn{display:block;text-align:center;margin-top:14px;padding:14px;border-radius:10px;background:#7b5d31;color:white;text-decoration:none;font-weight:750}
+code{background:#080a0b;padding:3px 6px;border-radius:5px;color:#d9aa5a}
+ol{padding-left:22px;line-height:1.7}.note{font-size:13px;color:#aaa;margin-top:12px}
+</style>
+<style>
+#adminGate{position:fixed;inset:0;z-index:99999;background:#090b0c;display:flex;align-items:center;justify-content:center;padding:20px}
+#adminGate .gateBox{width:min(100%,390px);background:#121516;border:1px solid #292d2f;border-radius:16px;padding:24px;text-align:center}
+#adminGate h2{margin:0 0 8px}
+#adminGate p{color:#999;margin:0 0 16px}
+#adminGate input{width:100%;padding:13px;border-radius:9px;border:1px solid #3a3d3f;background:#080a0b;color:#fff;margin-bottom:10px}
+#adminGate button{width:100%;padding:13px;border:0;border-radius:9px;background:#7b5d31;color:#fff;font-weight:750}
+#adminGate .err{color:#d97979;font-size:13px;min-height:18px;margin-top:9px}
+</style>
+
+</head><body>
+
+<div id="adminGate">
+  <div class="gateBox">
+    <h2>Bitulya Admin</h2>
+    <p>Введіть пароль для доступу</p>
+    <input id="adminPassword" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button id="adminLogin">Увійти</button>
+    <div class="err" id="adminError"></div>
+  </div>
+</div>
+<script>
+(async function(){
+  const EXPECTED="27ca69a76a8009f33c0886ca556fed6927e8ce478b206f85c52d127ecc9c766a";
+  const gate=document.getElementById("adminGate");
+  if(sessionStorage.getItem("bitulya_admin_ok")==="1"){gate.remove();return;}
+  async function sha256(s){
+    const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+  async function login(){
+    const value=document.getElementById("adminPassword").value;
+    if(await sha256(value)===EXPECTED){
+      sessionStorage.setItem("bitulya_admin_ok","1");
+      gate.remove();
+    } else {
+      document.getElementById("adminError").textContent="Неправильний пароль";
+    }
+  }
+  document.getElementById("adminLogin").onclick=login;
+  document.getElementById("adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+})();
+</script>
+<main>
+<h1>Bitulya Admin</h1><div class="muted">Аналітика сайту та переходів на музичні платформи.</div>
+<div class="card">
+<h2>Google Analytics</h2>
+<p>Статистика зберігається у вашому Google Analytics 4, а не в публічному GitHub-репозиторії.</p>
+<a class="btn" href="https://analytics.google.com/" target="_blank" rel="noopener">Відкрити статистику</a>
+</div>
+<div class="card">
+<h2>Що відстежується</h2>
+<p>Перегляди сторінки рахуються автоматично. Кнопки Spotify, YouTube Music, YouTube, TikTok та Instagram надсилають подію <code>platform_click</code> з назвою платформи.</p>
+</div>
+<div class="card">
+<h2>Де дивитися кліки</h2>
+<ol><li>Відкрийте Google Analytics.</li><li>Reports → Engagement → Events.</li><li>Відкрийте <code>platform_click</code>.</li><li>Для детального звіту за платформами використайте Explore та параметр <code>platform</code>.</li></ol>
+<div class="note">Ця сторінка не містить Google-паролів, API-ключів або GitHub token.</div>
+</div>
+</main></body></html>
